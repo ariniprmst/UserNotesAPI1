@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: User API
+  description: API untuk login pengguna dan mengelola catatan.
+  version: 1.0.0
+servers:
+  - url: http://localhost
+    description: Local server
+paths:
+  /login:
+    post:
+      summary: Login pengguna
+      description: Mengautentikasi pengguna dengan email dan password dan memberikan barrier token sebagai respons.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login berhasil, barrier token diberikan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Ya29.a0AfH6SMBzRmpcdXZ_aJm0TXNl5
+        '401':
+          description: Autentikasi gagal.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password
+        '500':
+          description: Kesalahan server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /notes:
+    post:
+      summary: Buat catatan baru
+      description: Membuat catatan baru. Token harus diverifikasi.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Catatan Baru
+                description:
+                  type: string
+                  example: Ini adalah deskripsi catatan baru
+              required:
+                - title
+                - description
+      responses:
+        '201':
+          description: Catatan berhasil dibuat.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 123
+                  title:
+                    type: string
+                    example: Catatan Baru
+                  description:
+                    type: string
+                    example: Ini adalah deskripsi catatan baru
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-16T08:30:00Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-16T08:30:00Z
+        '401':
+          description: Tidak terautentikasi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+        '500':
+          description: Kesalahan server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /notes/{id}:
+    get:
+      summary: Lihat catatan
+      description: Melihat data catatan berdasarkan ID. Token harus diverifikasi.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID catatan yang ingin dilihat
+      responses:
+        '200':
+          description: Data catatan berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 123
+                  title:
+                    type: string
+                    example: Catatan Baru
+                  description:
+                    type: string
+                    example: Ini adalah deskripsi catatan
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-10T08:30:00Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-16T08:30:00Z
+        '401':
+          description: Tidak terautentikasi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Catatan tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Note not found
+        '500':
+          description: Kesalahan server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+    put:
+      summary: Update catatan
+      description: Memperbarui catatan yang ada di tabel notes. Token harus diverifikasi.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID catatan yang akan diperbarui
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Catatan Baru
+                description:
+                  type: string
+                  example: Ini adalah deskripsi catatan yang diperbarui
+                updatedAt:
+                  type: string
+                  format: date-time
+                  example: 2024-05-16T08:30:00Z
+              required:
+                - title
+                - description
+                - updatedAt
+      responses:
+        '200':
+          description: Catatan berhasil diperbarui.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 123
+                  title:
+                    type: string
+                    example: Catatan Baru
+                  description:
+                    type: string
+                    example: Ini adalah deskripsi catatan yang diperbarui
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-10T08:30:00Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: 2024-05-16T08:30:00Z
+        '401':
+          description: Tidak terautentikasi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Catatan tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Note not found
+        '500':
+          description: Kesalahan server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+    delete:
+      summary: Hapus catatan
+      description: Menghapus catatan yang ada di tabel notes berdasarkan ID. Token harus diverifikasi.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID catatan yang akan dihapus
+      responses:
+        '204':
+          description: Catatan berhasil dihapus. Tidak ada konten yang dikembalikan.
+        '401':
+          description: Tidak terautentikasi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Catatan tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Note not found
+        '500':
+          description: Kesalahan server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - BearerAuth: []
